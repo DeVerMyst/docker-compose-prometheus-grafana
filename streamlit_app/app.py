@@ -3,20 +3,23 @@ import streamlit as st
 import requests
 import os
 
+# Récupération de l'URL de l'API depuis les variables d'environnement
+api_url = f"http://api:{os.getenv('FASTAPI_PORT', '8080')}"
+log_file = "logs/app.log"
 
-api_url = os.environ.get("FASTAPI_PORT")
+# Configuration de Loguru pour sauvegarder les logs
+logger.add(log_file, rotation="10 MB", retention="7 days", level="INFO")
 
-st.title("Data sender")
+st.title("Data Sender")
 
-choice = ["",""]
-selected_data = st.selectbox("Choose a data", choice)
+choices = ["Red", "Blue", "Green", "Yellow"]
+selected_data = st.selectbox("Choose a data", choices)
 
-if st.button("Send Color"):
-    logger.info(f"sent color: {selected_data}")
+if st.button("Send Data"):
+    logger.info(f"Sent data: {selected_data}")
     try:
-        response = requests.post()
+        response = requests.post(f"{api_url}/data", data={"data": selected_data})
         st.write(response.json())
     except requests.exceptions.RequestException as e:
-        logger.info(f"Error sent data: {selected_data}")
-        logger.info(f"sending to url : {api_url}")
+        logger.error(f"Error sending data: {selected_data}")
         st.error(f"Error: {e}")

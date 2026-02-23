@@ -1,21 +1,30 @@
-from fastapi import FastAPI, Form
-from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
-from loguru import logger
-import os
 import psutil
+from dotenv import load_dotenv
+from fastapi import FastAPI, Form
+from loguru import logger
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, generate_latest
 from starlette.responses import Response
 
+load_dotenv()
 app = FastAPI()
+
+# Monitoring
+REQUEST_COUNT = Counter("app_requests_total", "Total requests", ["method", "endpoint"])
+CPU_USAGE = Gauge("system_cpu_usage", "Usage CPU")
+
+logger.add("/logs/fastapi.log", rotation="500 MB")
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World from FastAPI"}
+    REQUEST_COUNT.labels(method="GET", endpoint="/").inc()
+    return {"status": "up"}
 
-@app.post("/data")
-async def receive_color(data: str = Form(...)):
-    logger.info(f"Received data: {data}")
-    return {"message": f"data {data} received"}
+@app.post("/predict")
+async def predict(data: str = Form(...)):
+    logger.info(f"Donnée reçue : {data}")
+    return {"prediction": "Valeur prédite", "value": 450}
 
 @app.get("/metrics")
 async def metrics():
-    return "toto"
+    CPU_USAGE.set(psutil.cpu_percent())
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)

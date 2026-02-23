@@ -1,52 +1,45 @@
 version: "3.8"
 services:
   api:
-    build: fastapi_app
+    build: ./fastapi_app
     ports:
-      - "${FASTAPI_PORT}:${FASTAPI_PORT}"
-    environment:
-      FASTAPI_PORT: ${FASTAPI_PORT}
+      - "${FASTAPI_PORT}:8080"
+    volumes:
+      - ./logs:/logs
     networks:
       - app_network
 
   streamlit:
-    build: streamlit_app
+    build: ./streamlit_app
     ports:
-      - "${STREAMLIT_PORT}:${STREAMLIT_PORT}"
-    depends_on:
-      - api
+      - "${STREAMLIT_PORT}:8501"
     environment:
-      API_URL: http://api:${FASTAPI_PORT}/
+      API_URL: http://api:8080
     volumes:
-      - ./logs:/logs  # Montage du volume pour stocker les logs de loguruuuuuuuu      
+      - ./logs:/logs
     networks:
       - app_network
 
   prometheus:
     image: prom/prometheus:latest
     ports:
-      - "${PROMETHEUS_PORT}:${PROMETHEUS_PORT}"
+      - "${PROMETHEUS_PORT}:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-    depends_on:
-      - api
+    networks:
+      - app_network
+
+  node-exporter:
+    image: prom/node-exporter:latest
     networks:
       - app_network
 
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "${GRAFANA_PORT}:${GRAFANA_PORT}"
-    environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      - "${GRAFANA_PORT}:3000"
     volumes:
-      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
-      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources      
-    depends_on:
-      - prometheus
+      - ./grafana/provisioning:/etc/grafana/provisioning
     networks:
       - app_network
 

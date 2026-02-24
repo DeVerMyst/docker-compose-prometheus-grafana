@@ -1,13 +1,8 @@
-version: "3.8"
 services:
   api:
     build: ./fastapi_app
     ports:
       - "${FASTAPI_PORT}:8080"
-    volumes:
-      - ./logs:/logs
-    networks:
-      - app_network
 
   streamlit:
     build: ./streamlit_app
@@ -15,33 +10,3 @@ services:
       - "${STREAMLIT_PORT}:8501"
     environment:
       API_URL: http://api:8080
-    volumes:
-      - ./logs:/logs
-    networks:
-      - app_network
-
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "${PROMETHEUS_PORT}:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    networks:
-      - app_network
-
-  node-exporter:
-    image: prom/node-exporter:latest
-    networks:
-      - app_network
-
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "${GRAFANA_PORT}:3000"
-    volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning
-    networks:
-      - app_network
-
-networks:
-  app_network:

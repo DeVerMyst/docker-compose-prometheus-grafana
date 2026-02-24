@@ -70,3 +70,5 @@ docker compose up --build
 
 Les logs persistants (gérés par Loguru) sont disponibles dans le répertoire racine `./logs/` pour l'audit et le debug.
 
+---
+

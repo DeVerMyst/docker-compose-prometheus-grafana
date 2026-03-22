@@ -10,3 +10,12 @@ services:
       - "${STREAMLIT_PORT}:8501"
     environment:
       API_URL: http://api:8080
+
+  prometheus:
+    image: prom/prometheus:latest
+
+  grafana:
+    image: grafana/grafana:latest
+
+  node-exporter:
+    image: prom/node-exporter:latest
